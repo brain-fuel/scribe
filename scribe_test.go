@@ -46,6 +46,26 @@ func TestCanvasAABlend(t *testing.T) {
 	}
 }
 
+func TestCanvasStroke(t *testing.T) {
+	c := NewCanvas(10, 10)
+	var p path.Path
+	p.MoveTo(geom.Pt(2, 5))
+	p.LineTo(geom.Pt(8, 5))
+	c.Stroke(&p, path.Pen{Width: 2, Cap: path.ButtCap}, red)
+	img := c.Image()
+	// stroke of width 2 centered on grid line y=5 fully covers pixel
+	// rows 4 and 5 between x=2 and x=8
+	if got := img.RGBAAt(5, 4); got != red {
+		t.Errorf("row 4 = %v", got)
+	}
+	if got := img.RGBAAt(5, 5); got != red {
+		t.Errorf("row 5 = %v", got)
+	}
+	if got := img.RGBAAt(5, 3); (got != color.RGBA{}) {
+		t.Errorf("row 3 = %v, want empty", got)
+	}
+}
+
 func TestWritePNGDeterministic(t *testing.T) {
 	render := func() []byte {
 		c := NewCanvas(16, 16)

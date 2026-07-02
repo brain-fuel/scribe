@@ -65,6 +65,11 @@ func (c *Canvas) fill(p *path.Path, col color.Color, rule raster.FillRule) {
 		mask, image.Point{}, draw.Over)
 }
 
+// Stroke strokes p with pen and color col.
+func (c *Canvas) Stroke(p *path.Path, pen path.Pen, col color.Color) {
+	c.Fill(path.Stroke(p, pen, FlattenTol), col)
+}
+
 // WritePNG encodes the canvas as PNG.
 func (c *Canvas) WritePNG(w io.Writer) error { return png.Encode(w, c.img) }
 
