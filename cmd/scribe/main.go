@@ -12,16 +12,12 @@ import (
 
 	"goforge.dev/scribe"
 	"goforge.dev/scribe/dl"
-	"goforge.dev/scribe/geom"
+	"goforge.dev/scribe/icon"
 	"goforge.dev/scribe/path"
 	"goforge.dev/scribe/ps"
 	"goforge.dev/scribe/svg"
 	"goforge.dev/scribe/term"
 )
-
-// appleRadiusRatio approximates the Apple app-icon corner radius as a
-// fraction of icon size.
-const appleRadiusRatio = 0.2237
 
 func main() {
 	if err := run(os.Args[1:]); err != nil {
@@ -146,7 +142,8 @@ func iconCmd(args []string) error {
 	radius := fs.Float64("radius", -1, "corner radius in pixels (-1: Apple ratio)")
 	style := fs.String("style", "continuous", "corner style: circular or continuous")
 	fill := fs.String("fill", "#FF6A00", "fill color #RRGGBB or #RRGGBBAA")
-	out := fs.String("o", "icon.png", "output PNG file")
+	set := fs.Bool("set", false, "write the full Apple size ladder; -o names the directory")
+	out := fs.String("o", "icon.png", "output PNG file (with -set: output directory)")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -163,15 +160,28 @@ func iconCmd(args []string) error {
 	if err != nil {
 		return err
 	}
+	spec := icon.Spec{Size: *size, Radius: *radius, Style: cs, Fill: col}
+	if *set {
+		dir := *out
+		if dir == "icon.png" {
+			dir = "."
+		}
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			return err
+		}
+		paths, err := icon.WriteSet(dir, "icon", spec, icon.AppleSizes)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("wrote %d icons to %s (style %s)\n", len(paths), dir, *style)
+		return nil
+	}
+	if err := icon.Plate(spec).SavePNG(*out); err != nil {
+		return err
+	}
 	r := *radius
 	if r < 0 {
-		r = appleRadiusRatio * float64(*size)
-	}
-	s := float64(*size)
-	c := scribe.NewCanvas(*size, *size)
-	c.Fill(path.RoundRect(geom.RectXYWH(0, 0, s, s), r, cs), col)
-	if err := c.SavePNG(*out); err != nil {
-		return err
+		r = icon.AppleRadiusRatio * float64(*size)
 	}
 	fmt.Printf("wrote %s (%dx%d, style %s, radius %.1f)\n", *out, *size, *size, *style, r)
 	return nil

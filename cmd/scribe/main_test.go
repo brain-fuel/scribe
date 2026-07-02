@@ -4,6 +4,7 @@ import (
 	"image/png"
 	"os"
 	"path/filepath"
+	"strconv"
 	"testing"
 )
 
@@ -33,6 +34,31 @@ func TestIconCommand(t *testing.T) {
 	r, g, b, a := img.At(32, 32).RGBA()
 	if a != 0xffff || r>>8 != 0x33 || g>>8 != 0x66 || b>>8 != 0x99 {
 		t.Errorf("center = %x %x %x %x", r, g, b, a)
+	}
+}
+
+func TestIconSet(t *testing.T) {
+	dir := t.TempDir()
+	if err := run([]string{"icon", "-set", "-fill", "#112233", "-o", dir}); err != nil {
+		t.Fatal(err)
+	}
+	f, err := os.Open(filepath.Join(dir, "icon_16.png"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	img, err := png.Decode(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if img.Bounds().Dx() != 16 {
+		t.Errorf("icon_16 size = %v", img.Bounds())
+	}
+	for _, n := range []int{32, 64, 128, 256, 512, 1024} {
+		p := filepath.Join(dir, "icon_"+strconv.Itoa(n)+".png")
+		if _, err := os.Stat(p); err != nil {
+			t.Errorf("missing %s", p)
+		}
 	}
 }
 
