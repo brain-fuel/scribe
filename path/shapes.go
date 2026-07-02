@@ -91,10 +91,32 @@ func cornerTable(style CornerStyle) (float64, []cornerSeg) {
 	return circularCorner.extent, circularCorner.segs
 }
 
-// Placeholder hooks overridden in the continuous-corner task. Until
-// then Continuous falls back to Circular.
-func continuousExtent() float64   { return circularCorner.extent }
-func continuousSegs() []cornerSeg { return circularCorner.segs }
+// contExtent is how far the continuous corner reaches along each edge,
+// in units of the corner radius.
+const contExtent = 1.52866483
+
+// continuousCornerSegs is Apple's continuous-curvature corner as
+// recovered from CoreGraphics output by PaintCode ("Drawing Code for
+// iOS 7 Rounded Rectangles"). Unit corner radius, (in, out)
+// coordinates. Three cubics with one short line between the first
+// and second. This is literally table-driven Bezier corner code.
+var continuousCornerSegs = []cornerSeg{
+	{pts: [3][2]float64{
+		{1.08849323, 0}, {0.86840689, 0}, {0.66993427, 0.06549600},
+	}},
+	{line: true, pts: [3][2]float64{
+		{0.63149399, 0.07491100}, {}, {},
+	}},
+	{pts: [3][2]float64{
+		{0.37282392, 0.16905899}, {0.16906013, 0.37282392}, {0.07491100, 0.63149399},
+	}},
+	{pts: [3][2]float64{
+		{0, 0.86840689}, {0, 1.08849323}, {0, 1.52866483},
+	}},
+}
+
+func continuousExtent() float64   { return contExtent }
+func continuousSegs() []cornerSeg { return continuousCornerSegs }
 
 // RoundRect returns a rounded rectangle. radius is the corner radius;
 // it is clamped so corners never overlap. radius <= 0 yields RectPath(r).
