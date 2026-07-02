@@ -35,6 +35,13 @@ Backends: one display list renders everywhere.
     scribe render drawing.scr -term                 # in your terminal
     scribe render drawing.scr -term -protocol sixel # kitty|sixel|halfblock
 
+Icon sets and animation:
+
+    scribe icon -set -fill '#FF6A00' -o ./icons     # 16..1024 Apple ladder
+
+    gui.WriteGIF(w, gui.GIFOptions{W: 128, H: 128, Frames: 30, DelayCS: 4},
+        func(frame int) dl.Program { ... })
+
 ## The model
 
 - Coordinates name grid lines between pixels. Pixel (x, y) is the unit
