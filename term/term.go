@@ -78,7 +78,3 @@ func writeHalfBlock(w io.Writer, img image.Image) error {
 	_, err := w.Write(b)
 	return err
 }
-
-// Temporary stubs: replaced by the kitty and sixel encoder tasks.
-func writeKitty(w io.Writer, img image.Image) error { return writeHalfBlock(w, img) }
-func writeSixel(w io.Writer, img image.Image) error { return writeHalfBlock(w, img) }
