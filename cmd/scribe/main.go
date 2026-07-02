@@ -7,11 +7,14 @@ import (
 	"flag"
 	"fmt"
 	"image/color"
+	"io"
 	"os"
 
 	"goforge.dev/scribe"
+	"goforge.dev/scribe/dl"
 	"goforge.dev/scribe/geom"
 	"goforge.dev/scribe/path"
+	"goforge.dev/scribe/ps"
 )
 
 // appleRadiusRatio approximates the Apple app-icon corner radius as a
@@ -27,14 +30,65 @@ func main() {
 
 func run(args []string) error {
 	if len(args) < 1 {
-		return fmt.Errorf("usage: scribe icon [flags]")
+		return fmt.Errorf("usage: scribe icon|render [flags]")
 	}
 	switch args[0] {
 	case "icon":
 		return iconCmd(args[1:])
+	case "render":
+		return renderCmd(args[1:])
 	default:
-		return fmt.Errorf("unknown command %q (want: icon)", args[0])
+		return fmt.Errorf("unknown command %q (want: icon or render)", args[0])
 	}
+}
+
+func renderCmd(args []string) error {
+	fs := flag.NewFlagSet("render", flag.ContinueOnError)
+	w := fs.Int("w", 256, "canvas width in pixels")
+	h := fs.Int("h", 256, "canvas height in pixels")
+	size := fs.Int("size", 0, "square canvas size (overrides -w and -h)")
+	out := fs.String("o", "out.png", "output PNG file")
+	// flag package stops at the first non-flag arg, so accept both
+	// "render FILE -flags" and "render -flags FILE".
+	var file string
+	rest := args
+	if len(rest) > 0 && rest[0] != "" && rest[0][0] != '-' {
+		file = rest[0]
+		rest = rest[1:]
+	}
+	if err := fs.Parse(rest); err != nil {
+		return err
+	}
+	if file == "" {
+		if fs.NArg() < 1 {
+			return fmt.Errorf("render: missing input file (use - for stdin)")
+		}
+		file = fs.Arg(0)
+	}
+	var src []byte
+	var err error
+	if file == "-" {
+		src, err = io.ReadAll(os.Stdin)
+	} else {
+		src, err = os.ReadFile(file)
+	}
+	if err != nil {
+		return err
+	}
+	prog, err := ps.Parse(string(src))
+	if err != nil {
+		return fmt.Errorf("%s:%v", file, err)
+	}
+	if *size > 0 {
+		*w, *h = *size, *size
+	}
+	c := scribe.NewCanvas(*w, *h)
+	dl.Render(prog, c)
+	if err := c.SavePNG(*out); err != nil {
+		return err
+	}
+	fmt.Printf("wrote %s (%dx%d, %d ops)\n", *out, *w, *h, len(prog))
+	return nil
 }
 
 func iconCmd(args []string) error {

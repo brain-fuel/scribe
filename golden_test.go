@@ -1,4 +1,6 @@
-package scribe
+// Golden tests live in an external test package: they render ps/dl
+// scenes, and dl imports scribe, so an internal test would cycle.
+package scribe_test
 
 import (
 	"bytes"
@@ -9,28 +11,31 @@ import (
 	"path/filepath"
 	"testing"
 
+	"goforge.dev/scribe"
+	"goforge.dev/scribe/dl"
 	"goforge.dev/scribe/geom"
 	"goforge.dev/scribe/path"
+	"goforge.dev/scribe/ps"
 )
 
-func scenes() map[string]*Canvas {
-	m := map[string]*Canvas{}
+func scenes(t *testing.T) map[string]*scribe.Canvas {
+	m := map[string]*scribe.Canvas{}
 
-	c := NewCanvas(64, 64)
+	c := scribe.NewCanvas(64, 64)
 	c.Fill(path.Circle(geom.Pt(32, 32), 24), color.RGBA{R: 220, G: 90, B: 30, A: 255})
 	m["circle"] = c
 
-	c = NewCanvas(128, 128)
+	c = scribe.NewCanvas(128, 128)
 	c.Fill(path.RoundRect(geom.RectXYWH(8, 8, 112, 112), 24, path.Circular),
 		color.RGBA{R: 30, G: 90, B: 220, A: 255})
 	m["roundrect_circular"] = c
 
-	c = NewCanvas(128, 128)
+	c = scribe.NewCanvas(128, 128)
 	c.Fill(path.RoundRect(geom.RectXYWH(8, 8, 112, 112), 24, path.Continuous),
 		color.RGBA{R: 30, G: 160, B: 90, A: 255})
 	m["roundrect_continuous"] = c
 
-	c = NewCanvas(96, 96)
+	c = scribe.NewCanvas(96, 96)
 	var zig path.Path
 	zig.MoveTo(geom.Pt(12, 72))
 	zig.LineTo(geom.Pt(36, 24))
@@ -40,12 +45,24 @@ func scenes() map[string]*Canvas {
 		color.RGBA{R: 120, G: 60, B: 200, A: 255})
 	m["stroke_zigzag"] = c
 
+	src, err := os.ReadFile(filepath.Join("testdata", "demo.scr"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	prog, err := ps.Parse(string(src))
+	if err != nil {
+		t.Fatal(err)
+	}
+	c = scribe.NewCanvas(128, 128)
+	dl.Render(prog, c)
+	m["demo_scr"] = c
+
 	return m
 }
 
 func TestGolden(t *testing.T) {
 	regen := os.Getenv("REGEN_GOLDEN") != ""
-	for name, c := range scenes() {
+	for name, c := range scenes(t) {
 		golden := filepath.Join("testdata", "golden", name+".png")
 		if regen {
 			if err := os.MkdirAll(filepath.Dir(golden), 0o755); err != nil {
@@ -107,7 +124,7 @@ func TestGolden(t *testing.T) {
 func TestScaleInvariance(t *testing.T) {
 	render := func(scale float64) *image.RGBA {
 		s := int(128 * scale)
-		c := NewCanvas(s, s)
+		c := scribe.NewCanvas(s, s)
 		p := path.RoundRect(geom.RectXYWH(8*scale, 8*scale, 112*scale, 112*scale),
 			24*scale, path.Continuous)
 		c.Fill(p, color.RGBA{R: 255, A: 255})

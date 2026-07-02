@@ -1,0 +1,21 @@
+% scribe demo: badge with stroked orbit
+#10121a clear
+#ff6a00 setcolor
+8 8 112 112 26 continuous roundrect
+fill
+#10121a setcolor
+64 64 34 circle
+fill
+#f5f0e8 setcolor
+6 setlinewidth
+round setcap
+round setjoin
+gsave
+64 64 translate
+30 -30 moveto
+-30 -30 -30 30 30 30 curveto
+stroke
+grestore
+#3aa0ff setcolor
+44 60 40 8 4 circular roundrect
+fill
