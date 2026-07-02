@@ -29,6 +29,12 @@ Drawing language (PostScript homage):
     0 0 512 512 114.7 continuous roundrect
     fill
 
+Backends: one display list renders everywhere.
+
+    scribe render drawing.scr -svg out.svg          # exact vector SVG
+    scribe render drawing.scr -term                 # in your terminal
+    scribe render drawing.scr -term -protocol sixel # kitty|sixel|halfblock
+
 ## The model
 
 - Coordinates name grid lines between pixels. Pixel (x, y) is the unit
