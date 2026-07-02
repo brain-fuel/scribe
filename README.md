@@ -20,6 +20,15 @@ Library:
     c.Fill(path.RoundRect(geom.RectXYWH(16, 16, 224, 224), 50, path.Continuous), color)
     c.SavePNG("out.png")
 
+Drawing language (PostScript homage):
+
+    scribe render drawing.scr -size 512 -o out.png
+
+    % drawing.scr
+    #ff6a00 setcolor
+    0 0 512 512 114.7 continuous roundrect
+    fill
+
 ## The model
 
 - Coordinates name grid lines between pixels. Pixel (x, y) is the unit
