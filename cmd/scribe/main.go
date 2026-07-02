@@ -15,6 +15,8 @@ import (
 	"goforge.dev/scribe/geom"
 	"goforge.dev/scribe/path"
 	"goforge.dev/scribe/ps"
+	"goforge.dev/scribe/svg"
+	"goforge.dev/scribe/term"
 )
 
 // appleRadiusRatio approximates the Apple app-icon corner radius as a
@@ -48,6 +50,9 @@ func renderCmd(args []string) error {
 	h := fs.Int("h", 256, "canvas height in pixels")
 	size := fs.Int("size", 0, "square canvas size (overrides -w and -h)")
 	out := fs.String("o", "out.png", "output PNG file")
+	svgOut := fs.String("svg", "", "also write SVG to this file")
+	termOut := fs.Bool("term", false, "write the render to the terminal")
+	protocol := fs.String("protocol", "auto", "terminal protocol: auto|kitty|sixel|halfblock")
 	// flag package stops at the first non-flag arg, so accept both
 	// "render FILE -flags" and "render -flags FILE".
 	var file string
@@ -82,12 +87,56 @@ func renderCmd(args []string) error {
 	if *size > 0 {
 		*w, *h = *size, *size
 	}
+	if *svgOut != "" {
+		f, err := os.Create(*svgOut)
+		if err != nil {
+			return err
+		}
+		if err := svg.Encode(f, prog, *w, *h); err != nil {
+			f.Close()
+			return err
+		}
+		if err := f.Close(); err != nil {
+			return err
+		}
+		fmt.Printf("wrote %s (%dx%d, %d ops)\n", *svgOut, *w, *h, len(prog))
+	}
+	oSet := false
+	fs.Visit(func(f *flag.Flag) {
+		if f.Name == "o" {
+			oSet = true
+		}
+	})
+	needRaster := oSet || *termOut || (*svgOut == "" && !*termOut)
+	if !needRaster {
+		return nil
+	}
 	c := scribe.NewCanvas(*w, *h)
 	dl.Render(prog, c)
-	if err := c.SavePNG(*out); err != nil {
-		return err
+	if oSet || (*svgOut == "" && !*termOut) {
+		if err := c.SavePNG(*out); err != nil {
+			return err
+		}
+		fmt.Printf("wrote %s (%dx%d, %d ops)\n", *out, *w, *h, len(prog))
 	}
-	fmt.Printf("wrote %s (%dx%d, %d ops)\n", *out, *w, *h, len(prog))
+	if *termOut {
+		p := term.HalfBlock
+		switch *protocol {
+		case "auto":
+			p = term.Detect(os.Getenv)
+		case "kitty":
+			p = term.Kitty
+		case "sixel":
+			p = term.Sixel
+		case "halfblock":
+			p = term.HalfBlock
+		default:
+			return fmt.Errorf("unknown protocol %q (want auto, kitty, sixel or halfblock)", *protocol)
+		}
+		if err := term.Write(os.Stdout, c.Image(), p); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

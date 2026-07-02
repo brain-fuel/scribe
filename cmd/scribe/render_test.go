@@ -37,6 +37,30 @@ func TestRenderCommand(t *testing.T) {
 	}
 }
 
+func TestRenderSVG(t *testing.T) {
+	dir := t.TempDir()
+	src := filepath.Join(dir, "d.scr")
+	if err := os.WriteFile(src, []byte("#ff0000 setcolor\n0 0 8 8 rect\nfill\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	out := filepath.Join(dir, "d.svg")
+	if err := run([]string{"render", src, "-size", "8", "-svg", out}); err != nil {
+		t.Fatal(err)
+	}
+	b, err := os.ReadFile(out)
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := string(b)
+	if !strings.Contains(s, "<svg") || !strings.Contains(s, `fill="#ff0000"`) {
+		t.Errorf("svg output wrong:\n%s", s)
+	}
+	// PNG default output must NOT appear when only -svg was asked.
+	if _, err := os.Stat(filepath.Join(dir, "out.png")); err == nil {
+		t.Error("default PNG written despite -svg-only request")
+	}
+}
+
 func TestRenderParseErrorSurfaces(t *testing.T) {
 	dir := t.TempDir()
 	src := filepath.Join(dir, "bad.scr")
