@@ -9,10 +9,10 @@ import "goforge.dev/scribe/geom"
 type Verb uint8
 
 const (
-	VMoveTo Verb = iota // 1 point
-	VLineTo             // 1 point
-	VCubicTo            // 3 points: c1, c2, to
-	VClose              // 0 points
+	VMoveTo  Verb = iota // 1 point
+	VLineTo              // 1 point
+	VCubicTo             // 3 points: c1, c2, to
+	VClose               // 0 points
 )
 
 // Path is a sequence of verbs over points. The zero value is an empty

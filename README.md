@@ -9,3 +9,24 @@ table-driven Bezier curves. Rendering is deterministic: the same input
 produces byte-identical pixels on every platform.
 
 Spec: docs/superpowers/specs/2026-07-01-scribe-design.md
+
+## Use
+
+    go run goforge.dev/scribe/cmd/scribe@latest icon -size 1024 -o icon.png
+
+Library:
+
+    c := scribe.NewCanvas(256, 256)
+    c.Fill(path.RoundRect(geom.RectXYWH(16, 16, 224, 224), 50, path.Continuous), color)
+    c.SavePNG("out.png")
+
+## The model
+
+- Coordinates name grid lines between pixels. Pixel (x, y) is the unit
+  square from (x, y) to (x+1, y+1). Rect(0,0,4,4) covers exactly 16
+  pixels.
+- Corners are table-driven cubic Beziers: circular (kappa table) or
+  continuous (Apple's G2 squircle table, via PaintCode).
+- Coverage antialiasing with exact analytic areas: a pixel half-covered
+  by an edge on a grid line has alpha exactly 128.
+- Deterministic: identical input gives byte-identical PNGs everywhere.
