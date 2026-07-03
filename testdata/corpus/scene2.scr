@@ -1,0 +1,12 @@
+% corpus scene 2: transforms and even-odd
+gsave
+4 4 translate
+2 2 scale
+1 1 10 10 rect
+eofill
+grestore
+16 16 10 circle
+16 16 5 circle
+eofill
+8 8 16 16 rect
+fill

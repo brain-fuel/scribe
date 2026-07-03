@@ -1,0 +1,10 @@
+% corpus scene 1: shapes and state (fills only)
+#10121a clear
+#ff6a00 setcolor
+2 2 28 28 6 continuous roundrect
+fill
+#10121a setcolor
+16 16 8 circle
+fill
+4 14 24 4 1 circular roundrect
+fill
