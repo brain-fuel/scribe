@@ -40,7 +40,9 @@ both worlds exchange drawings as plain text.
   stays in Q, no square roots. (The Go stroke uses sqrt for unit
   normals; the rune stroker offsets with squared-length comparisons
   or defers stroking to a later phase: fills alone prove the model.)
-- **L3: rasterizer.** Signed-area accumulation as a pure fold over
+- **L3: rasterizer.** DONE (rune v3.360.0, listings/ch563_scribe_raster.rune):
+  font-rs signed-area accumulation in exact rationals; half-coverage =
+  alpha 128 is a refl fact; see acceptance 3. Signed-area accumulation as a pure fold over
   edges into a per-row cell map, then a prefix-sum fold to alpha.
   Total, exact, slow: acceptance on small canvases (up to 64x64).
 - **L4: host acceleration.** The bible-port pattern: keep the data
@@ -83,4 +85,7 @@ recommendation: (b) with 1/256 precision, matching the subpixel grid.
    DONE (same chapter: demoParses and rtDemo, both refl).
 3. A 32x32 roundrect fill rendered by L3 matches Go scribe's PNG
    byte for byte.
+   DONE: 1024 of 1024 alphas identical (Go tools/lockgen fixture vs
+   ch563; permanent gate TestScribeLockL3 in the rune harness). Go's
+   disciplined float64 and rune's exact arithmetic agree exactly.
 4. Lock CI stage running the corpus on the standard backend set.
