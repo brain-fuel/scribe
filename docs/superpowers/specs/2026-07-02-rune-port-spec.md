@@ -71,7 +71,12 @@ recommendation: (b) with 1/256 precision, matching the subpixel grid.
 
 1. L1 round-trip property green in rune REPL and compiled (REPL
    integration is a mandatory acceptance step for rune features).
+   DONE (rune v3.356.0, listings/ch561_scribe_dl.rune): the round-trip
+   law is a refl proof on an all-constructor program, the codec runs
+   compiled (emit gate prints demo.scr's op count), and the whole
+   listing loads line by line in rune repl (TestREPLScribeDL).
 2. demo.scr parsed by rune, printed, re-parsed: fixed point.
+   DONE (same chapter: demoParses and rtDemo, both refl).
 3. A 32x32 roundrect fill rendered by L3 matches Go scribe's PNG
    byte for byte.
 4. Lock CI stage running the corpus on the standard backend set.
