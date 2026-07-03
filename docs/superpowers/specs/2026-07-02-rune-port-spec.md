@@ -31,7 +31,11 @@ both worlds exchange drawings as plain text.
   law `parse (print p) = ok p` is a property test (and a provable
   lemma later). Diagnostics follow rune's human-grade error style
   (line:col, expected/got), same positions as the Go parser.
-- **L2: geometry.** Point/Affine over Q, path builder, corner tables,
+- **L2: geometry.** DONE (rune v3.357.0, listings/ch562_scribe_geom.rune):
+  exact rationals, the corner tables as literal fractions, builders, and a
+  worklist flattener; the epsilon assertions of the Go tests are refl proofs
+  (exact extent, exact clamped bounds, exact radial band). Stroking deferred
+  as planned. Point/Affine over Q, path builder, corner tables,
   adaptive flattening. Flatness test compares squared distances:
   stays in Q, no square roots. (The Go stroke uses sqrt for unit
   normals; the rune stroker offsets with squared-length comparisons
