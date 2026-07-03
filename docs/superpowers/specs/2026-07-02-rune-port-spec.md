@@ -55,7 +55,14 @@ both worlds exchange drawings as plain text.
   the existing write-trio host ops for PNG output. The pure L3
   rasterizer stays as the reference the host op must match bit for
   bit (same divergence-lock discipline as the bible ETL).
-- **L5: divergence lock.** A shared corpus of .scr files (start with
+- **L5: divergence lock.** DONE (rune v3.365.0, ch565): a display-list
+  interpreter drives the exact pipeline end to end, and both corpus scenes
+  (testdata/corpus/, incl transforms and even-odd) render byte for byte
+  identical to dl.Masks: 6144 of 6144 alphas (TestScribeLockL5). Locked at
+  the mask level; PNG bytes are presentation, masks are meaning.
+  THE PORT IS COMPLETE: L1-L5 all landed (v3.356-v3.365). Bonus compiler
+  win found on the way: constant-time dispatch for shallow case on ANY
+  datatype (natDispatch generalized), corpus-wide. A shared corpus of .scr files (start with
   scribe's testdata/demo.scr and the golden scenes). CI renders each
   with Go scribe and rune scribe on every backend in the lock; PNGs
   must be byte-identical. This extends the existing 8-way lock
@@ -93,3 +100,6 @@ recommendation: (b) with 1/256 precision, matching the subpixel grid.
    ch563; permanent gate TestScribeLockL3 in the rune harness). Go's
    disciplined float64 and rune's exact arithmetic agree exactly.
 4. Lock CI stage running the corpus on the standard backend set.
+   DONE at the JS tier (every scribe gate runs node): TestScribeLockL3 +
+   TestScribeLockL5 in the rune harness. Wider backend fan-out is a
+   demand-gated tail, per the bible tiering pattern.
