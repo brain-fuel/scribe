@@ -45,7 +45,11 @@ both worlds exchange drawings as plain text.
   alpha 128 is a refl fact; see acceptance 3. Signed-area accumulation as a pure fold over
   edges into a per-row cell map, then a prefix-sum fold to alpha.
   Total, exact, slow: acceptance on small canvases (up to 64x64).
-- **L4: host acceleration.** The bible-port pattern: keep the data
+- **L4: host acceleration.** DONE (rune v3.361.0, ch564 + the rasterFill
+  host op): native float64 font-rs baked into the JS backend runtime; the
+  pure L3 rasterizer is the reference and ch564's deployed observable is
+  one bignum equality between the two packed masks (holds on the lock
+  instance). Other backends' bodies are demand-gated tails. The bible-port pattern: keep the data
   plane total in rune, push the hot loop behind a host op.
   `rasterFill : List Polygon -> Int -> Int -> Bytes` (alpha mask) and
   the existing write-trio host ops for PNG output. The pure L3
